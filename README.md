@@ -1,0 +1,2 @@
+# GstMadness
+Experimentations with Gstreamer
