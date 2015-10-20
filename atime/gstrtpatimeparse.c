@@ -120,11 +120,23 @@ handle_buffer (GstRtpatimeParse * self, GstBuffer * buf)
     goto out;
 
   timestamp = GST_READ_UINT64_BE (data);  /* TODO */
-  
-  GST_DEBUG_OBJECT (self, "timestamp: %" G_GUINT64_FORMAT, timestamp);
-  
   flags = GST_READ_UINT8 (data + 8);
   cseq = GST_READ_UINT8 (data + 9);  /* TODO */
+
+
+  /* convert timestamp */
+  
+  GST_DEBUG_OBJECT (self, "timestamp: %" G_GUINT64_FORMAT, timestamp);
+  GST_DEBUG_OBJECT (self, "PTS: %" G_GUINT64_FORMAT, buf->pts);
+  
+  /* convert back to NTP time. upper 32 bits should contain the seconds
+   * and the lower 32 bits, the fractions of a second. 
+   * Thus timestamp = time * denom/num
+   * */
+  timestamp = gst_util_uint64_scale (timestamp, GST_SECOND,
+        (G_GINT64_CONSTANT (1) << 32));
+
+  GST_DEBUG_OBJECT (self, "converted timestamp: %" G_GUINT64_FORMAT, timestamp);  
 
   /* C */
   if (flags & (1 << 7))
@@ -143,6 +155,7 @@ handle_buffer (GstRtpatimeParse * self, GstBuffer * buf)
 
 out:
   GST_DEBUG_OBJECT (self, "Gone to out!\n");
+  GST_DEBUG_OBJECT (self, "PTS: %" G_GUINT64_FORMAT, buf->pts);
   gst_rtp_buffer_unmap (&rtp);
   return TRUE;
 }
