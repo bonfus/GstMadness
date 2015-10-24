@@ -1,2 +1,2 @@
 # GstMadness
-Experimentations with Gstreamer
+Experiments with Gstreamer to achive absolute time transmission.
