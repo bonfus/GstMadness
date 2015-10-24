@@ -29,6 +29,7 @@
 #include <gst/rtp/gstrtpbuffer.h>
 
 #include "gstrtpatimeparse.h"
+#include "gstrtpatimemeta.h"
 
 GST_DEBUG_CATEGORY_STATIC (rtpatimeparse_debug);
 #define GST_CAT_DEFAULT (rtpatimeparse_debug)
@@ -101,7 +102,8 @@ handle_buffer (GstRtpatimeParse * self, GstBuffer * buf)
   guint wordlen;
   guint8 flags;
 
-  guint64 timestamp;
+  static GstClockTime timestamp;
+  ATimeMeta *atime_meta=NULL;
   guint8 cseq;
 
 
@@ -138,6 +140,10 @@ handle_buffer (GstRtpatimeParse * self, GstBuffer * buf)
 
   GST_DEBUG_OBJECT (self, "converted timestamp: %" G_GUINT64_FORMAT, timestamp);  
 
+  atime_meta = gst_buffer_add_atime_meta(buf, timestamp);
+
+  GST_DEBUG_OBJECT (self, "Added meta");  
+
   /* C */
   if (flags & (1 << 7))
     GST_BUFFER_FLAG_UNSET (buf, GST_BUFFER_FLAG_DELTA_UNIT);
@@ -154,8 +160,9 @@ handle_buffer (GstRtpatimeParse * self, GstBuffer * buf)
     GST_BUFFER_FLAG_UNSET (buf, GST_BUFFER_FLAG_DISCONT);
 
 out:
-  GST_DEBUG_OBJECT (self, "Gone to out!\n");
+  GST_DEBUG_OBJECT (self, "Gone to out!");
   GST_DEBUG_OBJECT (self, "PTS: %" G_GUINT64_FORMAT, buf->pts);
+  atime_meta = gst_buffer_add_atime_meta(buf, timestamp);
   gst_rtp_buffer_unmap (&rtp);
   return TRUE;
 }

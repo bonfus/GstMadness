@@ -352,26 +352,26 @@ handle_buffer (GstRtpatimeTimestamp * self, GstBuffer * buf,
   }
 
   /* NTP timestamp */
-  //if (GST_BUFFER_DTS_IS_VALID (buf)) {
-  //  time = gst_segment_to_running_time (&self->segment, GST_FORMAT_TIME,
-  //      GST_BUFFER_DTS (buf));
-  //} else if (GST_BUFFER_PTS_IS_VALID (buf)) {
-  //  time = gst_segment_to_running_time (&self->segment, GST_FORMAT_TIME,
-  //      GST_BUFFER_PTS (buf));
-  //} else {
-  //  GST_ERROR_OBJECT (self,
-  //      "Buffer doesn't contain any valid DTS or PTS timestamp");
-  //  goto done;
-  //}
-  if (GST_BUFFER_PTS_IS_VALID (buf)) {
-    time = GST_BUFFER_PTS (buf) + gst_element_get_base_time (GST_ELEMENT (self));
-  } else if (GST_BUFFER_DTS_IS_VALID (buf)) {
-    time = GST_BUFFER_DTS (buf) + gst_element_get_base_time (GST_ELEMENT (self));
+  if (GST_BUFFER_DTS_IS_VALID (buf)) {
+    time = gst_segment_to_running_time (&self->segment, GST_FORMAT_TIME,
+        GST_BUFFER_DTS (buf));
+  } else if (GST_BUFFER_PTS_IS_VALID (buf)) {
+    time = gst_segment_to_running_time (&self->segment, GST_FORMAT_TIME,
+        GST_BUFFER_PTS (buf));
   } else {
     GST_ERROR_OBJECT (self,
         "Buffer doesn't contain any valid DTS or PTS timestamp");
     goto done;
   }
+  //if (GST_BUFFER_PTS_IS_VALID (buf)) {
+  //  time = GST_BUFFER_PTS (buf) + gst_element_get_base_time (GST_ELEMENT (self));
+  //} else if (GST_BUFFER_DTS_IS_VALID (buf)) {
+  //  time = GST_BUFFER_DTS (buf) + gst_element_get_base_time (GST_ELEMENT (self));
+  //} else {
+  //  GST_ERROR_OBJECT (self,
+  //      "Buffer doesn't contain any valid DTS or PTS timestamp");
+  //  goto done;
+  //}
   
 
   if (time == GST_CLOCK_TIME_NONE) {
@@ -379,13 +379,18 @@ handle_buffer (GstRtpatimeTimestamp * self, GstBuffer * buf,
     goto done;
   }
 
-  GST_DEBUG_OBJECT (self, "time is: %" G_GUINT64_FORMAT, time);
-  GST_DEBUG_OBJECT (self, "offset is: %" G_GUINT64_FORMAT, self->ntp_offset);
 
   /* add the offset (in seconds) */
   time += self->ntp_offset;
   
-  GST_DEBUG_OBJECT (self, "final time is: %" G_GUINT64_FORMAT, time);
+  /* add basetime */
+  time += gst_element_get_base_time (GST_ELEMENT (self));
+  
+  GST_DEBUG_OBJECT (self, "ATIME Buf PTS: %" G_GUINT64_FORMAT, GST_BUFFER_PTS (buf));
+  GST_DEBUG_OBJECT (self, "ATIME base_time is: %" G_GUINT64_FORMAT, gst_element_get_base_time (GST_ELEMENT (self)));
+  GST_DEBUG_OBJECT (self, "ATIME time is: %" G_GUINT64_FORMAT, time);
+  GST_DEBUG_OBJECT (self, "ATIME offset is: %" G_GUINT64_FORMAT, self->ntp_offset);
+  GST_DEBUG_OBJECT (self, "ATIME final time is: %" G_GUINT64_FORMAT, time);
 
   /* convert to NTP time. upper 32 bits should contain the seconds
    * and the lower 32 bits, the fractions of a second. */
