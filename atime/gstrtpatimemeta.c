@@ -3,7 +3,8 @@
 GType atime_meta_api_get_type (void)
 {
   static volatile GType type;
-  static const gchar *tags[] = { "id", "val", NULL };
+  //static const gchar *tags[] = { "atime", "buf", NULL };
+  static const gchar *tags[] = { NULL };
 
   if (g_once_init_enter (&type)) {
     GType _type = gst_meta_api_type_register ("ATimeApi", tags);

@@ -53,12 +53,14 @@ GST_STATIC_PAD_TEMPLATE ("src",
 
 G_DEFINE_TYPE (GstRtpatimeParse, gst_rtp_atime_parse, GST_TYPE_ELEMENT);
 
+
 static void
 gst_rtp_atime_parse_class_init (GstRtpatimeParseClass * klass)
 {
   GstElementClass *gstelement_class;
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
+
 
   /* register pads */
   gst_element_class_add_pad_template (gstelement_class,
